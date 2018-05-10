@@ -12,7 +12,7 @@ if  [ ! -d "/var/www/web/typo3" ];then
     composer update
 
     # run TYPO3-setup:
-    typo3cms install:setup --no-interaction --force --skip-extension-setup=true --database-user-name=dev --database-user-password=dev --database-host-name=mysql --database-port=3306 --database-name=typo3 --admin-user-name='admin' --admin-password='password' --site-name='Docker' --database-create=0 --use-existing-database  --site-setup-type=no
+    typo3cms install:setup --no-interaction --force --skip-extension-setup --database-user-name=dev --database-user-password=dev --database-host-name=mysql --database-port=3306 --database-name=typo3 --admin-user-name='admin' --admin-password='password' --site-name='Docker' --database-create=0 --use-existing-database  --site-setup-type=no
 
     # restore DB:
     typo3cms database:import < /var/www/ingredients/mysql/initialdump.sql
@@ -30,7 +30,7 @@ if  [ ! -d "/var/www/web/typo3" ];then
     typo3cms install:fixfolderstructure
 
     # install DE-language
-    typo3cms language:update de
+    typo3cms language:update --locales-to-update de
 
     # finally cache:flush
     typo3cms cache:flush
