@@ -21,9 +21,7 @@ RUN apt-get update && \
         git \
         unzip \
         zip \
-        ssh
-# 07 Install required 3rd party tools
-RUN apt-get install -y \
+        ssh \
         libxml2-dev libfreetype6-dev \
         libjpeg62-turbo-dev \
         libpng-dev \
@@ -42,13 +40,14 @@ RUN apt-get install -y \
         libpng-dev \
         zlib1g-dev && \
     rm -rf /var/lib/apt/lists/* /usr/src/*
-# 08 configure Apache
+
+# 07 configure Apache
 RUN a2enmod rewrite ssl proxy proxy_http
 
-# 09 install composer globally - the ENV variables are already set:
+# 08 install composer globally - the ENV variables are already set:
 COPY --from=composer /usr/bin/composer /usr/bin/composer
 
-# 10 Configure volumes
+# 09 Configure volumes
 # these volumes stay persistent:
 VOLUME /var/www
 
