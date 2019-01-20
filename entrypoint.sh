@@ -29,9 +29,6 @@ if  [ ! -f "./web/typo3conf/LocalConfiguration.php" ];
         composer update nothing --no-scripts
         #now run install-cmd
         composer install;
-        # remove admin-user and restore default-DB:
-        mysql -hmysql -u"$MYSQL_USER" -p"$MYSQL_PASSWORD"  <<< "DELETE FROM typo3.be_users WHERE username='admin';"
-        typo3cms database:import < /var/www/ingredients/mysql/initialdump.sql
     else
         echo -e "${ORANGE}===================================${NC}"
         echo -e "${ORANGE}== TYPO3 is already installed  ==${NC}"
