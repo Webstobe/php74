@@ -24,10 +24,15 @@ RUN apt-get update && \
         ssh \
         libxml2-dev libfreetype6-dev \
         libjpeg62-turbo-dev \
+        libjpeg-turbo-progs \
         libpng-dev \
         rsync \
         zlib1g-dev \
         graphicsmagick \
+        jpegoptim \
+        optipng \
+        gifsicle \
+        poppler-utils \
         mysql-client && \
 # configure extensions
     docker-php-ext-configure gd --with-freetype-dir=/usr/include/ --with-jpeg-dir=/usr/include/ && \
