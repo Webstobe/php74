@@ -33,7 +33,7 @@ RUN apt-get update && \
     docker-php-ext-configure gd --with-freetype-dir=/usr/include/ --with-jpeg-dir=/usr/include/ && \
     docker-php-ext-install -j$(nproc) mysqli pdo_mysql soap gd zip opcache intl && \
     pecl install xdebug && \
-    pecl install acpu && \
+    pecl install apcu && \
     apt-get clean && \
     apt-get -y purge \
         libxml2-dev libfreetype6-dev \
