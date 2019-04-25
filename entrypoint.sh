@@ -24,10 +24,7 @@ if  [ ! -f "./web/typo3conf/LocalConfiguration.php" ];
         echo -e "${RED}==========================================${NC}"
         # reset existing database and composer.lock:
         mysql -hmysql -u"$MYSQL_USER" -p"$MYSQL_PASSWORD"  <<< "DROP DATABASE IF EXISTS typo3; CREATE DATABASE typo3;"
-        rm -f composer.lock
-        # first refresh the composer.lock file to have a proper install:
-        composer update nothing --no-scripts
-        #now run install-cmd
+        # run install-cmd
         composer install;
     else
         echo -e "${ORANGE}===================================${NC}"
