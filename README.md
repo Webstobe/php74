@@ -22,5 +22,9 @@ overview
   - gifsicle
   - poppler-utils (pdftotext / pdftohtml ...)
 
+##### 2019-08-30 
+- add most used locales to the image
+- replace mysql-client with mariadb-client (because of update to php-image)
+
 ##### 2019-01-25 
 - drop auto-import of DB to avoid interference with composer-scripts and manual migrations

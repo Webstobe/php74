@@ -8,6 +8,7 @@ ENV APACHE_DOCUMENT_ROOT="/var/www/web" COMPOSER_ALLOW_SUPERUSER=1 PATH="/var/ww
 # 04 set desired timezone
 RUN echo Europe/Zurich >/etc/timezone && \
 dpkg-reconfigure -f noninteractive tzdata
+
 # 05
 RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf && \
     sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf
@@ -33,18 +34,28 @@ RUN apt-get update && \
         optipng \
         gifsicle \
         poppler-utils \
-        mysql-client && \
+        mariadb-client \
+        locales && \
 # configure extensions
     docker-php-ext-configure gd --with-freetype-dir=/usr/include/ --with-jpeg-dir=/usr/include/ && \
     docker-php-ext-install -j$(nproc) mysqli pdo_mysql soap gd zip opcache intl && \
     pecl install xdebug && \
     pecl install apcu && \
+# install locales
+    sed -i -e 's/# de_DE.UTF-8 UTF-8/de_DE.UTF-8 UTF-8/' /etc/locale.gen && \
+    sed -i -e 's/# de_CH.UTF-8 UTF-8/de_CH.UTF-8 UTF-8/' /etc/locale.gen && \
+    sed -i -e 's/# it_IT.UTF-8 UTF-8/it_IT.UTF-8 UTF-8/' /etc/locale.gen && \
+    sed -i -e 's/# it_CH.UTF-8 UTF-8/it_CH.UTF-8 UTF-8/' /etc/locale.gen && \
+    sed -i -e 's/# fr_FR.UTF-8 UTF-8/fr_FR.UTF-8 UTF-8/' /etc/locale.gen && \
+    sed -i -e 's/# fr_CH.UTF-8 UTF-8/fr_CH.UTF-8 UTF-8/' /etc/locale.gen && \
+    locale-gen && \
     apt-get clean && \
     apt-get -y purge \
         libxml2-dev libfreetype6-dev \
         libjpeg62-turbo-dev \
         libpng-dev \
         zlib1g-dev && \
+    apt-get autoremove -y && \
     rm -rf /var/lib/apt/lists/* /usr/src/*
 
 # 07 configure Apache
