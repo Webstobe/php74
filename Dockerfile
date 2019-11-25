@@ -27,6 +27,7 @@ RUN apt-get update && \
         libjpeg62-turbo-dev \
         libjpeg-turbo-progs \
         libpng-dev \
+        libldap2-dev \
         rsync \
         zlib1g-dev \
         graphicsmagick \
@@ -38,7 +39,8 @@ RUN apt-get update && \
         locales && \
 # configure extensions
     docker-php-ext-configure gd --with-freetype-dir=/usr/include/ --with-jpeg-dir=/usr/include/ && \
-    docker-php-ext-install -j$(nproc) mysqli pdo_mysql soap gd zip opcache intl && \
+    docker-php-ext-configure ldap --with-libdir=lib/x86_64-linux-gnu/ && \
+    docker-php-ext-install -j$(nproc) mysqli pdo_mysql soap gd zip opcache intl ldap && \
     pecl install xdebug && \
     pecl install apcu && \
 # install locales
@@ -55,19 +57,16 @@ RUN apt-get update && \
         libjpeg62-turbo-dev \
         libpng-dev \
         zlib1g-dev && \
+        libldap2-dev && \
     apt-get autoremove -y && \
     rm -rf /var/lib/apt/lists/* /usr/src/*
-
 # 07 configure Apache
 RUN a2enmod rewrite ssl proxy proxy_http
-
 # 08 install composer globally - the ENV variables are already set:
 COPY --from=composer /usr/bin/composer /usr/bin/composer
-
 # 09 Configure volumes
 # these volumes stay persistent:
 VOLUME /var/www
-
 # lets try this for windows:
 COPY entrypoint.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/entrypoint.sh
