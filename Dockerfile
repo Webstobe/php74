@@ -57,7 +57,6 @@ RUN apt-get update && \
         libjpeg62-turbo-dev \
         libpng-dev \
         zlib1g-dev && \
-        libldap2-dev && \
     apt-get autoremove -y && \
     rm -rf /var/lib/apt/lists/* /usr/src/*
 # 07 configure Apache
