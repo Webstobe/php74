@@ -15,6 +15,7 @@ overview
   - unzip / zip
   - rsync
   - graphicsmagick
+  - ghostscript
   - mysql-client
   - ssh
   - jpegoptim

@@ -31,6 +31,7 @@ RUN apt-get update && \
         rsync \
         zlib1g-dev \
         graphicsmagick \
+        ghostscript \
         jpegoptim \
         optipng \
         gifsicle \
