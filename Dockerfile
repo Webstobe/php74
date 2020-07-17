@@ -1,5 +1,5 @@
 FROM composer AS composer
-FROM php:7.2-apache
+FROM php:7.4-apache
 # 02
 MAINTAINER Nando Bosshart <nando@webstobe.ch>
 #03 set ENV variables
@@ -29,21 +29,29 @@ RUN apt-get update && \
         libpng-dev \
         libldap2-dev \
         rsync \
-        zlib1g-dev \
+        libbz2-dev \
+        libxslt-dev \
+        libzip-dev \
         graphicsmagick \
         ghostscript \
         jpegoptim \
         optipng \
         gifsicle \
         poppler-utils \
+        ffmpeg \
+        webp libimage-exiftool-perl \
+        html2text \
         mariadb-client \
         locales && \
 # configure extensions
-    docker-php-ext-configure gd --with-freetype-dir=/usr/include/ --with-jpeg-dir=/usr/include/ && \
+    docker-php-ext-configure gd --with-freetype --with-jpeg && \
     docker-php-ext-configure ldap --with-libdir=lib/x86_64-linux-gnu/ && \
-    docker-php-ext-install -j$(nproc) mysqli pdo_mysql soap gd zip opcache intl ldap && \
+    docker-php-ext-install -j$(nproc) bz2 dom exif gd intl mysqli pdo_mysql soap zip opcache intl ldap xsl && \
     pecl install xdebug && \
     pecl install apcu && \
+    pecl install -o -f redis && \
+    rm -rf /tmp/pear && \
+    docker-php-ext-enable redis && \
 # install locales
     sed -i -e 's/# de_DE.UTF-8 UTF-8/de_DE.UTF-8 UTF-8/' /etc/locale.gen && \
     sed -i -e 's/# de_CH.UTF-8 UTF-8/de_CH.UTF-8 UTF-8/' /etc/locale.gen && \
@@ -53,22 +61,21 @@ RUN apt-get update && \
     sed -i -e 's/# fr_CH.UTF-8 UTF-8/fr_CH.UTF-8 UTF-8/' /etc/locale.gen && \
     locale-gen && \
     apt-get clean && \
-    apt-get -y purge \
-        libxml2-dev libfreetype6-dev \
-        libjpeg62-turbo-dev \
-        libpng-dev \
-        zlib1g-dev && \
     apt-get autoremove -y && \
     rm -rf /var/lib/apt/lists/* /usr/src/*
 # 07 configure Apache
-RUN a2enmod rewrite ssl proxy proxy_http
+RUN a2enmod rewrite ssl proxy proxy_http alias expires headers
 # 08 install composer globally - the ENV variables are already set:
 COPY --from=composer /usr/bin/composer /usr/bin/composer
 # 09 Configure volumes
 # these volumes stay persistent:
 VOLUME /var/www
-# lets try this for windows:
+RUN echo "www-data:www-data" | chpasswd && adduser www-data sudo
+RUN echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
+RUN usermod -d /home/www-data www-data
 COPY entrypoint.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/entrypoint.sh
+WORKDIR /var/www
+USER root:www-data
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
-CMD ["apache2-foreground"]
+CMD ["sudo", "-E", "bash", "/usr/local/bin/entrypoint.sh"]
