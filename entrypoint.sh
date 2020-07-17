@@ -36,5 +36,6 @@ php -v
 echo -e "${GREEN}=======================================================${NC}"
 echo -e "${GREEN}==      APACHE IS STARTING, CONTAINER IS READY       ==${NC}"
 echo -e "${GREEN}=======================================================${NC}"
+
 exec apache2-foreground
 #exec "$@"
