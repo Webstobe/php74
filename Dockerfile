@@ -7,7 +7,7 @@ ENV DEBIAN_FRONTEND=noninteractive \
     DATE_TIMEZONE="Europe/Zurich" \
     SHELL=/bin/bash \
     APACHE_DOCUMENT_ROOT="/var/www/web" \
-    COMPOSER_ALLOW_SUPERUSER=1 \
+    COMPOSER_HOME="$HOME/.config/composer" \
     PATH="/var/www/vendor/bin:$PATH"
 
 # 02
@@ -20,7 +20,6 @@ RUN apt-get update -q && apt-get -y install wget apt-transport-https lsb-release
 RUN apt-get update -q && \
     apt-get -yqq install \
         locales \
-        apt-utils \
         sudo \
         wget \
         nano \
@@ -49,6 +48,7 @@ RUN apt-get update -q && \
         ffmpeg \
         mariadb-client \
         apache2 \
+        php${PHP_VERSION}-apcu \
         php${PHP_VERSION}-bz2 \
         php${PHP_VERSION}-cli \
         php${PHP_VERSION}-common \
@@ -81,7 +81,7 @@ RUN wget https://github.com/imagemin/zopflipng-bin/raw/master/vendor/linux/zopfl
 
 
 # 04 set desired timezone
-RUN echo Europe/Zurich >/etc/timezone && \
+RUN echo $DATE_TIMEZONE >/etc/timezone && \
     dpkg-reconfigure -f noninteractive tzdata
 
 # install locales
@@ -93,9 +93,7 @@ RUN sed -i -e 's/# de_DE.UTF-8 UTF-8/de_DE.UTF-8 UTF-8/' /etc/locale.gen && \
     sed -i -e 's/# fr_CH.UTF-8 UTF-8/fr_CH.UTF-8 UTF-8/' /etc/locale.gen && \
     locale-gen
 
-# 06 # configure extensions
-
-# 07 configure Apache
+# configure Apache
 RUN a2enmod actions alias proxy_fcgi proxy proxy_http rewrite setenvif expires headers ssl && \
     a2enconf "php${PHP_VERSION}-fpm"
 
@@ -103,21 +101,24 @@ RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-av
     sed -ri -e "s?AllowOverride None?AllowOverride All?g" /etc/apache2/apache2.conf && \
     sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf
 
-# 08 install composer globally - the ENV variables are already set:
+# install composer globally - the ENV variables are already set:
 COPY --from=composer /usr/bin/composer /usr/bin/composer
 RUN apt-get clean && \
     apt-get autoremove -y && \
     rm -rf /var/lib/apt/lists/* /usr/src/*
-# 09 Configure volumes
-VOLUME /var/www
-# permissions
+# Configure user
 RUN echo "www-data:www-data" | chpasswd && adduser www-data sudo
 RUN echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
-RUN usermod -d /home/www-data www-data
-# finishing
+RUN mkdir -p /home/www-data/.ssh && \
+    mkdir -p /home/www-data/.composer && \
+    chmod -R 600 /home/www-data/.ssh
+RUN usermod -d /home/www-data www-data  && \
+    chown -R www-data:www-data /var/www /home/www-data
+
 COPY entrypoint.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/entrypoint.sh
+
 WORKDIR /var/www
-#USER www-data
-ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
+USER www-data
+ENTRYPOINT []
 CMD ["sudo", "-E", "bash", "/usr/local/bin/entrypoint.sh"]
